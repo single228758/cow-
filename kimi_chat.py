@@ -162,28 +162,54 @@ class KimiChat(Plugin):
 
     def extract_url(self, content):
         """从内容中提取URL并格式化为Kimi所需的格式"""
-        url_pattern = r'https?://[^\s<>"]+|www\.[^\s<>"]+'
+        if not content:
+            return None
+        
+        # 更精确的URL匹配模式
+        url_pattern = r'https?://[^\s<>"]+|www\.[^\s<>"]+(?:\?[^\s<>"]*)?(?:#[^\s<>"]*)?'
         urls = re.findall(url_pattern, content)
         if urls:
-            # 检是否是需要排除的链接
             url = urls[0]
+            # 检查是否是需要排除的链接
             for exclude_url in self.exclude_urls:
                 if exclude_url in url:
                     logger.info(f"[KimiChat] 检测到排除链接，跳过处理: {url}")
                     return None
             
             # 处理HTML实体编码
-            url = url.replace('&amp;', '&')  # 解码 &amp; 为 &
+            url = url.replace('&amp;', '&')
+            
+            # 添加调试日志
+            logger.debug(f"[KimiChat] 提取到URL: {url}")
+            
             return f'<url id="" type="url" status="" title="" wc="">{url}</url>'
         return None
 
     def handle_url_content(self, content, user_id, e_context):
         """统一处理URL内容的函数"""
-        formatted_url = self.extract_url(content)
+        # 从内容中提取URL和自定义提示词
+        content = content.strip()
+        custom_prompt = None
+        
+        # 检查是否有自定义提示词
+        if content.startswith(self.keyword):
+            content = content[len(self.keyword):].strip()
+        
+        # 分离提示词和URL
+        parts = content.split('http', 1)
+        if len(parts) == 2:
+            custom_prompt = parts[0].strip()
+            url = 'http' + parts[1].strip()
+        else:
+            url = content
+        
+        formatted_url = self.extract_url(url)
         if formatted_url:
-            # 构建带有提示词的内容
-            actual_content = f"{self.summary_prompt}\n\n{formatted_url}"
-            logger.info(f"[KimiChat] 检测到URL,已格式化为: {actual_content}")
+            # 使用自定义提示词或默认提示词
+            actual_prompt = custom_prompt if custom_prompt else self.summary_prompt
+            actual_content = f"{actual_prompt}\n\n{formatted_url}"
+            logger.info(f"[KimiChat] 检测到URL,使用提示词: {actual_prompt}")
+            logger.info(f"[KimiChat] 格式化内容: {actual_content}")
             
             # 使用现有会话或创建新会话
             if user_id in self.chat_data:
@@ -196,7 +222,6 @@ class KimiChat(Plugin):
                 self.chat_data[user_id] = {'chatid': chat_id, 'use_search': True}
             
             rely_content = self.clean_references(rely_content)
-            # 添加提示信息到回复内容
             tip_message = f"\n\n发送 {self.keyword}+问题 可以继续追问"
             reply = Reply(ReplyType.TEXT, rely_content + tip_message)
             e_context["reply"] = reply
@@ -275,12 +300,13 @@ class KimiChat(Plugin):
             
             # 处理普通文本对话
             if self.keyword == "" or content.startswith(self.keyword):
+                # 检查是否包含URL
+                if 'http' in content:
+                    return self.handle_url_content(content, user_id, e_context)
+                
+                # 移除关键词前缀
                 if self.keyword and content.startswith(self.keyword):
                     content = content[len(self.keyword):].strip()
-                
-                # 检查是否是URL内容
-                if re.match('https?://', content):
-                    return self.handle_url_content(content, user_id, e_context)
                 
                 # 处理普通对话
                 if user_id in self.chat_data:
@@ -502,10 +528,10 @@ class KimiChat(Plugin):
             # 添加上传进度提示
             current_count = len(user_info['received']) + 1
             total_count = user_info['count']
-            progress_msg = f"正在上传第 {current_count}/{total_count} 个文件..."
+            progress_msg = f"正在上传第 {current_count}/{total_count} 个文��..."
             e_context["channel"].send(Reply(ReplyType.TEXT, progress_msg), e_context["context"])
             
-            # 异步上传文件
+            # 异步上传文
             def upload_file():
                 try:
                     uploader = FileUploader()
@@ -680,12 +706,12 @@ class KimiChat(Plugin):
     def handle_file_recognition(self, file_path, user_id, e_context, custom_prompt=None):
         """处理文件识别"""
         try:
-            logger.info(f"[KimiChat] 开始处理文件: {file_path}")
+            logger.info(f"[KimiChat] 开始处理文: {file_path}")
             
             # 获取文件类型
             file_type = mimetypes.guess_type(file_path)[0] or "application/octet-stream"
             
-            # 根据文件��型择提示词
+            # 根据文件类型择提示词
             if file_type.startswith("image"):
                 prompt = custom_prompt or self.image_prompts
             else:
@@ -846,7 +872,7 @@ class KimiChat(Plugin):
         }
         logger.debug(f"[KimiChat] 已创建等待记录: {self.waiting_files[waiting_id]}")
         
-        # 返回更详��的等待提示
+        # 返回更详的等待提示
         timeout_minutes = 5
         reply_text = (
             f"请在{timeout_minutes}分钟内发送{file_count}个文件或图片\n"
@@ -912,5 +938,5 @@ class KimiChat(Plugin):
         if group_name not in self.conf.get("allowed_groups", []):
             return  # 如果不在允的群组列表中，直接返回
         
-        # 继续���理消息的其他逻辑
+        # 继续理消息的其他逻辑
         ...
