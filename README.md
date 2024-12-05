@@ -14,12 +14,22 @@ chatgpt-on-wechat插件
 - 联网搜索: 支持实时联网信息查询
 - 权限管理: 支持群组白名单管理
 
+验明身份和可以联网获取最新新闻
+![image](https://github.com/user-attachments/assets/84797615-d186-4eb4-8cd2-33612bd41404)
+
+识别图片
+<img width="929" alt="1733388517175" src="https://github.com/user-attachments/assets/8da1f7a5-e7fe-4366-9af0-acdafc53a841">
+
+
+
 ## 安装配置
 
 1. 下载插件到 plugins 目录
-2. 复制 config.json.template 为 config.json
-3. 配置 refresh_token 和其他参数
-4. 重启程序生效
+或者管理模式#installp https://github.com/single228758/cow-.git
+           #scanp
+3. 复制 config.json.template 为 config.json
+4. 配置 refresh_token 和其他参数
+5. 重启程序生效
 
 ## 配置详解
 
