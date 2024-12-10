@@ -1,6 +1,4 @@
-好的，我将在您的文档中增加这一部分说明。以下是更新后的 Markdown 文档：
 
-```markdown
 # KimiChat 插件说明
 
 [国产模型Kimi](https://kimi.moonshot.cn/) 插件，支持联网、文件解析、20万上下文。
