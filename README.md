@@ -16,6 +16,8 @@
 
 本插件基于 [cow_plugin_kimichat](https://github.com/LargeCupPanda/cow_plugin_kimichat) 修改，增加了图片识别和链接总结功能。需要先安装 [chatgpt-on-wechat](https://github.com/zhayujie/chatgpt-on-wechat) 框架。
 
+音频转文字采用硅基流动API，如果没有账号可以走我的邀请链接https://cloud.siliconflow.cn/i/tPQSNa6I
+
 ### 1. 安装插件
 在 chatgpt-on-wechat 项目的根目录下，使用管理员模式执行：
 ```bash
@@ -27,8 +29,8 @@
 # 进入插件目录
 cd plugins/cow_plugin_kimichat/
 
-# 复制配置模板
-cp config.json.template config.json
+# 修改配置模板
+config.json
 ```
 
 ### 3. 安装依赖
@@ -224,12 +226,18 @@ k分析/k识图              # 其他触发词都可以
 
 v0.2
 - 添加视频分析功能
-- 支持音频转写
-- 优化文件处理逻辑
 
 
 v0.1 
 - 基础对话功能
 - 联网搜索支持
 - 多轮对话支持
+
+## 其他
+代码均由gpt生成可能会有很多bug，本人不懂代码，只能通过不断通过不同的AI进行缝缝补补，如果您有任何改进建议或者功能请求，可以尽情的创建lssue
+
+觉得插件对您有帮助可以打赏一下
+
+
+
 
