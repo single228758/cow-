@@ -24,7 +24,7 @@
 使用管理员模式执行：
 
 ```bash
-pip install https://github.com/single228758/cow-.git
+#installp https://github.com/single228758/cow-.git
 ```
 
 ### 2. 配置插件
