@@ -283,6 +283,7 @@ v0.1
 代码均由gpt生成可能会有很多bug，本人不懂代码，只能通过不断通过不同的AI进行缝缝补补，如果您有任何改进建议或者功能请求，可以尽情的创建lssue
 
 觉得插件对您有帮助可以打赏一下
+
 <img width="329" alt="1733830277449" src="https://github.com/user-attachments/assets/95613b54-d6ba-41d2-8148-86e97a98f307">
 
 
