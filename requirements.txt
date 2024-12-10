@@ -1,0 +1,15 @@
+# API 和网络请求
+requests>=2.31.0
+
+# 视频处理
+moviepy>=2.0.0
+imageio-ffmpeg>=0.4.8
+
+# 音频处理
+pydub>=0.25.1
+
+# 图像处理
+Pillow>=10.0.0
+
+# 编码和解码
+chardet>=5.1.0
