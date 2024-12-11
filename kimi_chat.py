@@ -371,9 +371,17 @@ class KimiChat(Plugin):
                 msg = content[len(self.keyword):].strip() if content.startswith(self.keyword) else content
                 return self.handle_normal_chat(msg, real_user_id, e_context)
             
-        # 处理文件上传
+            # 处理文件上传
         elif context_type in [ContextType.FILE, ContextType.IMAGE, ContextType.VIDEO]:
             # 检查是否在等待文件状态
+            waiting_id = f"{group_id}_{real_user_id}" if is_group else real_user_id
+            if waiting_id not in self.waiting_files:
+                logger.debug("[KimiChat] 未检测到触发词启动的文件等待状态，跳过处理")
+                return False
+            waiting_info = self.waiting_files.get(waiting_id)
+            if not waiting_info:
+                logger.debug(f"[KimiChat] 无效的 waiting_files 状态: {waiting_id}")
+                return False
             if waiting_id in self.waiting_files:
                 waiting_info = self.waiting_files[waiting_id]
                 
@@ -696,6 +704,10 @@ class KimiChat(Plugin):
                             logger.error(f"[KimiChat] 删除临时文件失败: {file_path}, 错误: {str(e)}")
                     
                     self.clean_temp_directory()
+                    # 清理 waiting_files 状态
+                    if user_id in self.waiting_files:
+                        del self.waiting_files[user_id]
+                        logger.debug(f"[KimiChat] 清理完成的 waiting_files 状态: {user_id}")
                     
             else:
                 # 处理普通文件和图片
@@ -976,41 +988,23 @@ class KimiChat(Plugin):
             if user_id in self.waiting_files:
                 waiting_info = self.waiting_files[user_id]
                 # 清理临时件
-                received_files = waiting_info.get('received_files', [])
-                for file_info in received_files:
-                    if isinstance(file_info, dict) and 'path' in file_info:
-                        file_path = file_info['path']
+                # 清理接收到的文件
+                for file_path in waiting_info.get('received_files', []):
+                    if os.path.exists(file_path):
                         try:
-                            if os.path.exists(file_path):
-                                os.remove(file_path)
-                                logger.debug(f"[KimiChat] 删除临时文件: {file_path}")
+                            os.remove(file_path)
+                            logger.debug(f"[KimiChat] 删除文件: {file_path}")
                         except Exception as e:
-                            logger.error(f"[KimiChat] 删除临时文件失败: {str(e)}")
-                            continue
-                
-                # 清理downloads目录
-                try:
-                    downloads_dir = os.path.join(os.path.dirname(__file__), 'downloads')
-                    if os.path.exists(downloads_dir):
-                        for file in os.listdir(downloads_dir):
-                            file_path = os.path.join(downloads_dir, file)
-                            try:
-                                if os.path.isfile(file_path):
-                                    os.remove(file_path)
-                                    logger.debug(f"[KimiChat] 除下载文件: {file_path}")
-                            except Exception as e:
-                                logger.error(f"[KimiChat] 删除下载文件失败: {str(e)}")
-                except Exception as e:
-                    logger.error(f"[KimiChat] 清理downloads目录失败: {str(e)}")
-                
-                # 除等待状态
-                del self.waiting_files[user_id]
-                logger.debug(f"[KimiChat] 清理用户 {user_id} 的文件数据")
+                            logger.error(f"[KimiChat] 删除文件失败: {file_path}, 错误: {str(e)}")
+
+            # 删除 waiting_files 状态
+            del self.waiting_files[user_id]
+            logger.debug(f"[KimiChat] 已清理 waiting_files 状态: {user_id}")
+
         except Exception as e:
-            logger.error(f"[KimiChat] 处理文件失败: {str(e)}")
-            # 确保使用出错也删除等待状态
-            if user_id in self.waiting_files:
-                del self.waiting_files[user_id]
+            logger.error(f"[KimiChat] 清理 waiting_files 失败: {str(e)}")
+                
+ 
 
     def handle_file_trigger(self, trigger, content, user_id, e_context):
         """处理文件触发"""
